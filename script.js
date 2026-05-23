@@ -1,5 +1,3 @@
-// script.js
-
 // =========================
 // FIREBASE IMPORTS
 // =========================
@@ -24,19 +22,22 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
 
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyCIky3PO6xrO9SU33m7h76z5Y4VIjKlYok",
 
-  authDomain: "YOUR_AUTH_DOMAIN",
+  authDomain: "imposter-3d642.firebaseapp.com",
 
-  databaseURL: "YOUR_DATABASE_URL",
+  databaseURL:
+    "https://imposter-3d642-default-rtdb.firebaseio.com",
 
-  projectId: "YOUR_PROJECT_ID",
+  projectId: "imposter-3d642",
 
-  storageBucket: "YOUR_STORAGE_BUCKET",
+  storageBucket:
+    "imposter-3d642.firebasestorage.app",
 
-  messagingSenderId: "YOUR_SENDER_ID",
+  messagingSenderId: "1032266053376",
 
-  appId: "YOUR_APP_ID"
+  appId:
+    "1:1032266053376:web:054bcc4e32535f5d4165e5"
 
 };
 
@@ -89,7 +90,7 @@ const copyBtn =
 
 
 // =========================
-// ROOM CODE
+// GENERATE ROOM CODE
 // =========================
 
 function generateRoomCode(length = 6) {
@@ -112,7 +113,7 @@ function generateRoomCode(length = 6) {
 
 
 // =========================
-// ERROR
+// ERROR HANDLER
 // =========================
 
 function showError(message) {
@@ -148,10 +149,12 @@ createBtn.addEventListener(
     const lobbyRef =
       ref(db, `lobbies/${roomCode}`);
 
+    // Create lobby
     await set(lobbyRef, {
       createdAt: Date.now()
     });
 
+    // Add creator
     const playersRef =
       ref(db, `lobbies/${roomCode}/players`);
 
@@ -202,6 +205,7 @@ joinBtn.addEventListener(
       return;
     }
 
+    // Add player
     const playersRef =
       ref(db, `lobbies/${roomCode}/players`);
 
@@ -230,6 +234,7 @@ function openLobby(roomCode) {
   const playersRef =
     ref(db, `lobbies/${roomCode}/players`);
 
+  // REALTIME PLAYER UPDATES
   onValue(playersRef, (snapshot) => {
 
     playerList.innerHTML = "";
