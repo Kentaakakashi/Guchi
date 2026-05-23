@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pulse Lobby</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="bg glow1"></div>
+  <div class="bg glow2"></div>
+
+  <main class="wrapper">
+
+    <!-- HOME -->
+    <section class="panel" id="homeScreen">
+
+      <div class="hero">
+
+        <div class="logo">
+          <div class="logo-dot"></div>
+          Pulse Lobby
+        </div>
+
+        <h1>
+          Multiplayer Lobby
+        </h1>
+
+        <p>
+          Create realtime party rooms with your friends instantly.
+        </p>
+
+      </div>
+
+      <div class="input-box">
+
+        <label>Username</label>
+
+        <input
+          id="username"
+          maxlength="14"
+          type="text"
+          placeholder="Enter your username"
+        />
+
+      </div>
+
+      <button id="createBtn" class="primary-btn">
+        Create Lobby
+      </button>
+
+      <div class="divider">
+        <span>OR JOIN</span>
+      </div>
+
+      <div class="input-box">
+
+        <label>Room Code</label>
+
+        <input
+          id="roomCode"
+          maxlength="6"
+          type="text"
+          placeholder="Enter room code"
+        />
+
+      </div>
+
+      <button id="joinBtn" class="secondary-btn">
+        Join Lobby
+      </button>
+
+      <p id="errorText"></p>
+
+      <div class="features">
+
+        <div class="feature-card">
+          ⚡ Realtime Sync
+        </div>
+
+        <div class="feature-card">
+          📱 Mobile Friendly
+        </div>
+
+        <div class="feature-card">
+          🎮 Host Controls
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- LOBBY -->
+    <section class="panel hidden" id="lobbyScreen">
+
+      <div class="topbar">
+
+        <div>
+
+          <p class="mini-title">
+            ROOM CODE
+          </p>
+
+          <h2 id="displayCode">
+            ABC123
+          </h2>
+
+        </div>
+
+        <button id="copyBtn" class="small-btn">
+          Copy
+        </button>
+
+      </div>
+
+      <div class="lobby-status">
+
+        <div class="online-status">
+          <div class="pulse"></div>
+          Live Realtime Lobby
+        </div>
+
+        <div id="playerCount">
+          0/8 Players
+        </div>
+
+      </div>
+
+      <div id="playerList"></div>
+
+      <div class="action-grid">
+
+        <button id="readyBtn" class="secondary-btn">
+          Ready
+        </button>
+
+        <button id="startBtn" class="primary-btn hidden">
+          Start Match
+        </button>
+
+      </div>
+
+      <button id="leaveBtn" class="danger-btn">
+        Leave Lobby
+      </button>
+
+      <div class="footer-note">
+        Share the room code with your friends.
+      </div>
+
+    </section>
+
+  </main>
+
+  <script type="module" src="script.js"></script>
+
+</body>
+</html>
