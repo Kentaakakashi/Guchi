@@ -1,7 +1,3 @@
-// =========================
-// FIREBASE IMPORTS
-// =========================
-
 import { initializeApp }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
@@ -11,14 +7,14 @@ import {
   set,
   get,
   push,
-  onValue
+  onValue,
+  update,
+  remove
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
-// =========================
 // FIREBASE CONFIG
-// =========================
 
 const firebaseConfig = {
 
@@ -42,18 +38,14 @@ const firebaseConfig = {
 };
 
 
-// =========================
-// INIT FIREBASE
-// =========================
+// INIT
 
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app);
 
 
-// =========================
 // ELEMENTS
-// =========================
 
 const usernameInput =
   document.getElementById("username");
@@ -66,9 +58,6 @@ const createBtn =
 
 const joinBtn =
   document.getElementById("joinBtn");
-
-const errorText =
-  document.getElementById("errorText");
 
 const homeScreen =
   document.getElementById("homeScreen");
@@ -88,10 +77,24 @@ const playerCount =
 const copyBtn =
   document.getElementById("copyBtn");
 
+const readyBtn =
+  document.getElementById("readyBtn");
 
-// =========================
-// GENERATE ROOM CODE
-// =========================
+const startBtn =
+  document.getElementById("startBtn");
+
+const leaveBtn =
+  document.getElementById("leaveBtn");
+
+
+// STATE
+
+let currentRoom = "";
+let currentPlayerId = "";
+let isHost = false;
+
+
+// ROOM CODE
 
 function generateRoomCode(length = 6) {
 
@@ -112,24 +115,7 @@ function generateRoomCode(length = 6) {
 }
 
 
-// =========================
-// ERROR HANDLER
-// =========================
-
-function showError(message) {
-
-  errorText.textContent = message;
-
-  setTimeout(() => {
-    errorText.textContent = "";
-  }, 3000);
-
-}
-
-
-// =========================
 // CREATE LOBBY
-// =========================
 
 createBtn.addEventListener(
   "click",
@@ -139,7 +125,7 @@ createBtn.addEventListener(
       usernameInput.value.trim();
 
     if (!username) {
-      showError("Enter username");
+      alert("Enter username");
       return;
     }
 
@@ -149,18 +135,21 @@ createBtn.addEventListener(
     const lobbyRef =
       ref(db, `lobbies/${roomCode}`);
 
-    // Create lobby
     await set(lobbyRef, {
-      createdAt: Date.now()
+      host: username,
+      started: false
     });
 
-    // Add creator
     const playersRef =
       ref(db, `lobbies/${roomCode}/players`);
 
-    await push(playersRef, {
-      username
-    });
+    const newPlayer =
+      await push(playersRef, {
+        username,
+        ready: false
+      });
+
+    currentPlayerId = newPlayer.key;
 
     openLobby(roomCode);
 
@@ -168,9 +157,7 @@ createBtn.addEventListener(
 );
 
 
-// =========================
 // JOIN LOBBY
-// =========================
 
 joinBtn.addEventListener(
   "click",
@@ -185,12 +172,7 @@ joinBtn.addEventListener(
         .toUpperCase();
 
     if (!username) {
-      showError("Enter username");
-      return;
-    }
-
-    if (!roomCode) {
-      showError("Enter room code");
+      alert("Enter username");
       return;
     }
 
@@ -201,17 +183,20 @@ joinBtn.addEventListener(
       await get(lobbyRef);
 
     if (!snapshot.exists()) {
-      showError("Invalid room code");
+      alert("Invalid room");
       return;
     }
 
-    // Add player
     const playersRef =
       ref(db, `lobbies/${roomCode}/players`);
 
-    await push(playersRef, {
-      username
-    });
+    const newPlayer =
+      await push(playersRef, {
+        username,
+        ready: false
+      });
+
+    currentPlayerId = newPlayer.key;
 
     openLobby(roomCode);
 
@@ -219,11 +204,11 @@ joinBtn.addEventListener(
 );
 
 
-// =========================
 // OPEN LOBBY
-// =========================
 
 function openLobby(roomCode) {
+
+  currentRoom = roomCode;
 
   homeScreen.classList.add("hidden");
 
@@ -231,67 +216,154 @@ function openLobby(roomCode) {
 
   displayCode.textContent = roomCode;
 
-  const playersRef =
-    ref(db, `lobbies/${roomCode}/players`);
+  const lobbyRef =
+    ref(db, `lobbies/${roomCode}`);
 
-  // REALTIME PLAYER UPDATES
-  onValue(playersRef, (snapshot) => {
-
-    playerList.innerHTML = "";
+  onValue(lobbyRef, (snapshot) => {
 
     const data = snapshot.val();
 
     if (!data) return;
 
+    playerList.innerHTML = "";
+
     const players =
-      Object.values(data);
+      data.players || {};
+
+    const totalPlayers =
+      Object.keys(players).length;
 
     playerCount.textContent =
-      `${players.length} Players`;
+      `${totalPlayers}/8 Players`;
 
-    players.forEach((player) => {
+    Object.entries(players).forEach(
+      ([id, player]) => {
 
-      const div =
-        document.createElement("div");
+        const div =
+          document.createElement("div");
 
-      div.className = "player";
+        div.className = "player";
 
-      const firstLetter =
-        player.username
-          .charAt(0)
-          .toUpperCase();
+        const isPlayerHost =
+          player.username === data.host;
 
-      div.innerHTML = `
-        <div class="avatar">
-          ${firstLetter}
-        </div>
+        if (
+          player.username ===
+          usernameInput.value.trim()
+        ) {
+          isHost = isPlayerHost;
+        }
 
-        <div class="player-name">
-          ${player.username}
-        </div>
-      `;
+        div.innerHTML = `
+          <div class="avatar">
+            ${player.username
+              .charAt(0)
+              .toUpperCase()}
+          </div>
 
-      playerList.appendChild(div);
+          <div class="player-name">
+            ${player.username}
+          </div>
 
-    });
+          <div class="player-tags">
+
+            ${
+              isPlayerHost
+                ? `
+                <div class="tag host-tag">
+                  HOST
+                </div>
+              `
+                : ""
+            }
+
+            ${
+              player.ready
+                ? `
+                <div class="tag ready-tag">
+                  READY
+                </div>
+              `
+                : ""
+            }
+
+          </div>
+        `;
+
+        playerList.appendChild(div);
+
+      }
+    );
+
+    // HOST CONTROLS
+
+    if (isHost) {
+      startBtn.classList.remove("hidden");
+    } else {
+      startBtn.classList.add("hidden");
+    }
+
+    // GAME START
+
+    if (data.started) {
+
+      alert("Game Starting!");
+
+    }
 
   });
 
 }
 
 
-// =========================
-// COPY ROOM CODE
-// =========================
+// READY BUTTON
+
+readyBtn.addEventListener(
+  "click",
+  async () => {
+
+    const playerRef =
+      ref(
+        db,
+        `lobbies/${currentRoom}/players/${currentPlayerId}`
+      );
+
+    await update(playerRef, {
+      ready: true
+    });
+
+    readyBtn.textContent = "Ready ✓";
+
+  }
+);
+
+
+// START BUTTON
+
+startBtn.addEventListener(
+  "click",
+  async () => {
+
+    const lobbyRef =
+      ref(db, `lobbies/${currentRoom}`);
+
+    await update(lobbyRef, {
+      started: true
+    });
+
+  }
+);
+
+
+// COPY BUTTON
 
 copyBtn.addEventListener(
   "click",
   async () => {
 
-    const code =
-      displayCode.textContent;
-
-    await navigator.clipboard.writeText(code);
+    await navigator.clipboard.writeText(
+      currentRoom
+    );
 
     copyBtn.textContent = "Copied!";
 
@@ -301,3 +373,24 @@ copyBtn.addEventListener(
 
   }
 );
+
+
+// LEAVE BUTTON
+
+leaveBtn.addEventListener(
+  "click",
+  async () => {
+
+    const playerRef =
+      ref(
+        db,
+        `lobbies/${currentRoom}/players/${currentPlayerId}`
+      );
+
+    await remove(playerRef);
+
+    location.reload();
+
+  }
+);
+        
