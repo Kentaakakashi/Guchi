@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pulse Lobby</title>
+  <title>Pulse Imposter</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,21 +20,22 @@
   <main class="wrapper">
 
     <!-- HOME -->
+
     <section class="panel" id="homeScreen">
 
       <div class="hero">
 
         <div class="logo">
           <div class="logo-dot"></div>
-          Pulse Lobby
+          Pulse Imposter
         </div>
 
         <h1>
-          Multiplayer Lobby
+          Multiplayer Imposter
         </h1>
 
         <p>
-          Create realtime party rooms with your friends instantly.
+          Realtime party game powered by Firebase.
         </p>
 
       </div>
@@ -47,7 +48,7 @@
           id="username"
           maxlength="14"
           type="text"
-          placeholder="Enter your username"
+          placeholder="Enter username"
         />
 
       </div>
@@ -79,17 +80,11 @@
 
       <p id="errorText"></p>
 
-      <div class="features">
-
-        <div class="feature-card">
-          ⚡ Realtime Sync
-        </div>
-
-      </div>
-
     </section>
 
+
     <!-- LOBBY -->
+
     <section class="panel hidden" id="lobbyScreen">
 
       <div class="topbar">
@@ -116,7 +111,7 @@
 
         <div class="online-status">
           <div class="pulse"></div>
-          Live Realtime Lobby
+          Live Lobby
         </div>
 
         <div id="playerCount">
@@ -143,8 +138,79 @@
         Leave Lobby
       </button>
 
-      <div class="footer-note">
-        Share the room code with your friends.
+    </section>
+
+
+    <!-- GAME SCREEN -->
+
+    <section class="panel hidden" id="gameScreen">
+
+      <div class="game-title">
+        YOUR ROLE
+      </div>
+
+      <div id="roleCard" class="role-card">
+
+        <h1 id="roleText">
+          CREWMATE
+        </h1>
+
+        <p id="wordText">
+          WORD
+        </p>
+
+      </div>
+
+      <div class="timer-box">
+
+        <div class="mini-title">
+          DISCUSSION TIMER
+        </div>
+
+        <h1 id="timerDisplay">
+          60
+        </h1>
+
+      </div>
+
+      <button id="voteBtn" class="primary-btn">
+        Go To Voting
+      </button>
+
+    </section>
+
+
+    <!-- VOTING -->
+
+    <section class="panel hidden" id="voteScreen">
+
+      <div class="game-title">
+        VOTE THE IMPOSTER
+      </div>
+
+      <div id="voteList"></div>
+
+      <div id="voteStatus" class="vote-status">
+        Waiting for votes...
+      </div>
+
+    </section>
+
+
+    <!-- RESULT -->
+
+    <section class="panel hidden" id="resultScreen">
+
+      <div class="result-box">
+
+        <h1 id="resultTitle">
+          RESULT
+        </h1>
+
+        <p id="resultText">
+          Result text
+        </p>
+
       </div>
 
     </section>
