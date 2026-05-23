@@ -13,6 +13,9 @@ import {
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
+
+// FIREBASE
+
 const firebaseConfig = {
 
   apiKey: "AIzaSyCIky3PO6xrO9SU33m7h76z5Y4VIjKlYok",
@@ -38,6 +41,25 @@ const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app);
 
+
+// WORDS
+
+const words = [
+  "Pizza",
+  "Hospital",
+  "Minecraft",
+  "Tiger",
+  "Beach",
+  "School",
+  "Laptop",
+  "Football",
+  "Airplane",
+  "Watermelon"
+];
+
+
+// ELEMENTS
+
 const usernameInput =
   document.getElementById("username");
 
@@ -58,6 +80,15 @@ const homeScreen =
 
 const lobbyScreen =
   document.getElementById("lobbyScreen");
+
+const gameScreen =
+  document.getElementById("gameScreen");
+
+const voteScreen =
+  document.getElementById("voteScreen");
+
+const resultScreen =
+  document.getElementById("resultScreen");
 
 const displayCode =
   document.getElementById("displayCode");
@@ -80,9 +111,40 @@ const startBtn =
 const leaveBtn =
   document.getElementById("leaveBtn");
 
+const roleText =
+  document.getElementById("roleText");
+
+const wordText =
+  document.getElementById("wordText");
+
+const timerDisplay =
+  document.getElementById("timerDisplay");
+
+const voteBtn =
+  document.getElementById("voteBtn");
+
+const voteList =
+  document.getElementById("voteList");
+
+const voteStatus =
+  document.getElementById("voteStatus");
+
+const resultTitle =
+  document.getElementById("resultTitle");
+
+const resultText =
+  document.getElementById("resultText");
+
+
+// STATE
+
 let currentRoom = "";
 let currentPlayerId = "";
+let currentUsername = "";
 let isReady = false;
+
+
+// ROOM CODE
 
 function generateRoomCode(length = 6) {
 
@@ -103,6 +165,9 @@ function generateRoomCode(length = 6) {
 
 }
 
+
+// ERROR
+
 function showError(message) {
 
   errorText.textContent = message;
@@ -112,6 +177,9 @@ function showError(message) {
   }, 3000);
 
 }
+
+
+// CREATE
 
 createBtn.addEventListener(
   "click",
@@ -125,6 +193,8 @@ createBtn.addEventListener(
       return;
     }
 
+    currentUsername = username;
+
     const roomCode =
       generateRoomCode();
 
@@ -134,24 +204,29 @@ createBtn.addEventListener(
     await set(lobbyRef, {
       host: username,
       started: false,
-      createdAt: Date.now()
+      phase: "lobby"
     });
 
     const playersRef =
       ref(db, `lobbies/${roomCode}/players`);
 
-    const player =
-      await push(playersRef, {
-        username,
-        ready: false
-      });
+    const playerRef = push(playersRef);
 
-    currentPlayerId = player.key;
+    currentPlayerId = playerRef.key;
+
+    await set(playerRef, {
+      username,
+      ready: false,
+      voted: false
+    });
 
     openLobby(roomCode);
 
   }
 );
+
+
+// JOIN
 
 joinBtn.addEventListener(
   "click",
@@ -170,10 +245,7 @@ joinBtn.addEventListener(
       return;
     }
 
-    if (!roomCode) {
-      showError("Enter room code");
-      return;
-    }
+    currentUsername = username;
 
     const lobbyRef =
       ref(db, `lobbies/${roomCode}`);
@@ -186,31 +258,36 @@ joinBtn.addEventListener(
       return;
     }
 
-    const players =
-      snapshot.val().players || {};
+    const data = snapshot.val();
+
+    const players = data.players || {};
 
     if (
       Object.keys(players).length >= 8
     ) {
-      showError("Lobby is full");
+      showError("Lobby full");
       return;
     }
 
-    const playersRef =
-      ref(db, `lobbies/${roomCode}/players`);
+    const playerRef = push(
+      ref(db, `lobbies/${roomCode}/players`)
+    );
 
-    const player =
-      await push(playersRef, {
-        username,
-        ready: false
-      });
+    currentPlayerId = playerRef.key;
 
-    currentPlayerId = player.key;
+    await set(playerRef, {
+      username,
+      ready: false,
+      voted: false
+    });
 
     openLobby(roomCode);
 
   }
 );
+
+
+// OPEN LOBBY
 
 function openLobby(roomCode) {
 
@@ -231,16 +308,12 @@ function openLobby(roomCode) {
 
     if (!data) return;
 
+    const players = data.players || {};
+
     playerList.innerHTML = "";
 
-    const players =
-      data.players || {};
-
-    const totalPlayers =
-      Object.keys(players).length;
-
     playerCount.textContent =
-      `${totalPlayers}/8 Players`;
+      `${Object.keys(players).length}/8 Players`;
 
     Object.entries(players).forEach(
       ([id, player]) => {
@@ -256,51 +329,37 @@ function openLobby(roomCode) {
 
         card.innerHTML = `
 
-          <div class="avatar">
-            ${player.username
-              .charAt(0)
-              .toUpperCase()}
+        <div class="avatar">
+          ${player.username.charAt(0).toUpperCase()}
+        </div>
+
+        <div class="player-meta">
+
+          <div class="player-name">
+            ${player.username}
           </div>
 
-          <div class="player-meta">
-
-            <div class="player-name">
-              ${player.username}
-            </div>
-
-            <div class="player-state">
-              ${
-                player.ready
-                  ? "Ready to play"
-                  : "Not ready"
-              }
-            </div>
-
+          <div class="player-state">
+            ${player.ready ? "Ready" : "Not ready"}
           </div>
 
-          <div class="badges">
+        </div>
 
-            ${
-              isHost
-                ? `
-                <div class="badge host">
-                  HOST
-                </div>
-              `
-                : ""
-            }
+        <div class="badges">
 
-            ${
-              player.ready
-                ? `
-                <div class="badge ready">
-                  READY
-                </div>
-              `
-                : ""
-            }
+          ${
+            isHost
+            ? `<div class="badge host">HOST</div>`
+            : ""
+          }
 
-          </div>
+          ${
+            player.ready
+            ? `<div class="badge ready">READY</div>`
+            : ""
+          }
+
+        </div>
 
         `;
 
@@ -309,8 +368,8 @@ function openLobby(roomCode) {
       }
     );
 
-    const currentUsername =
-      usernameInput.value.trim();
+
+    // HOST BUTTON
 
     if (data.host === currentUsername) {
       startBtn.classList.remove("hidden");
@@ -318,13 +377,33 @@ function openLobby(roomCode) {
       startBtn.classList.add("hidden");
     }
 
-    if (data.started) {
-      alert("Game Starting...");
+
+    // GAME START
+
+    if (data.phase === "game") {
+      showGame(data);
+    }
+
+
+    // VOTING
+
+    if (data.phase === "voting") {
+      showVoting(data);
+    }
+
+
+    // RESULT
+
+    if (data.phase === "result") {
+      showResult(data);
     }
 
   });
 
 }
+
+
+// READY
 
 readyBtn.addEventListener(
   "click",
@@ -332,37 +411,351 @@ readyBtn.addEventListener(
 
     isReady = !isReady;
 
-    const playerRef =
+    await update(
       ref(
         db,
         `lobbies/${currentRoom}/players/${currentPlayerId}`
-      );
-
-    await update(playerRef, {
-      ready: isReady
-    });
+      ),
+      {
+        ready: isReady
+      }
+    );
 
     readyBtn.textContent =
-      isReady
-        ? "Unready"
-        : "Ready";
+      isReady ? "Unready" : "Ready";
 
   }
 );
+
+
+// START GAME
 
 startBtn.addEventListener(
   "click",
   async () => {
 
-    const lobbyRef =
-      ref(db, `lobbies/${currentRoom}`);
+    const snapshot =
+      await get(
+        ref(db, `lobbies/${currentRoom}`)
+      );
 
-    await update(lobbyRef, {
-      started: true
-    });
+    const data = snapshot.val();
+
+    const players = data.players || {};
+
+    const ids = Object.keys(players);
+
+    const randomWord =
+      words[
+        Math.floor(Math.random() * words.length)
+      ];
+
+    const imposterId =
+      ids[
+        Math.floor(Math.random() * ids.length)
+      ];
+
+
+    // GIVE ROLES
+
+    for (const id of ids) {
+
+      const isImposter =
+        id === imposterId;
+
+      await update(
+        ref(
+          db,
+          `lobbies/${currentRoom}/players/${id}`
+        ),
+        {
+          role: isImposter
+            ? "imposter"
+            : "crewmate",
+
+          word: isImposter
+            ? null
+            : randomWord
+        }
+      );
+
+    }
+
+    await update(
+      ref(db, `lobbies/${currentRoom}`),
+      {
+        phase: "game",
+        started: true
+      }
+    );
 
   }
 );
+
+
+// SHOW GAME
+
+function showGame(data) {
+
+  lobbyScreen.classList.add("hidden");
+
+  voteScreen.classList.add("hidden");
+
+  resultScreen.classList.add("hidden");
+
+  gameScreen.classList.remove("hidden");
+
+
+  const players = data.players || {};
+
+  const me = players[currentPlayerId];
+
+  if (!me) return;
+
+
+  if (me.role === "imposter") {
+
+    roleText.textContent =
+      "IMPOSTER";
+
+    wordText.textContent =
+      "Blend in with the others";
+
+  } else {
+
+    roleText.textContent =
+      "CREWMATE";
+
+    wordText.textContent =
+      `WORD: ${me.word}`;
+
+  }
+
+
+  // TIMER
+
+  let time = 60;
+
+  timerDisplay.textContent = time;
+
+  const timer = setInterval(() => {
+
+    time--;
+
+    timerDisplay.textContent = time;
+
+    if (time <= 0) {
+
+      clearInterval(timer);
+
+      update(
+        ref(db, `lobbies/${currentRoom}`),
+        {
+          phase: "voting"
+        }
+      );
+
+    }
+
+  }, 1000);
+
+}
+
+
+// MANUAL VOTE BUTTON
+
+voteBtn.addEventListener(
+  "click",
+  async () => {
+
+    await update(
+      ref(db, `lobbies/${currentRoom}`),
+      {
+        phase: "voting"
+      }
+    );
+
+  }
+);
+
+
+// SHOW VOTING
+
+function showVoting(data) {
+
+  gameScreen.classList.add("hidden");
+
+  voteScreen.classList.remove("hidden");
+
+  voteList.innerHTML = "";
+
+
+  const players = data.players || {};
+
+
+  Object.entries(players).forEach(
+    ([id, player]) => {
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        "vote-card";
+
+      card.innerHTML = `
+
+      <div class="avatar">
+        ${player.username.charAt(0).toUpperCase()}
+      </div>
+
+      <div class="player-meta">
+
+        <div class="player-name">
+          ${player.username}
+        </div>
+
+      </div>
+
+      <button class="vote-btn">
+        Vote
+      </button>
+
+      `;
+
+      const btn =
+        card.querySelector("button");
+
+      btn.addEventListener(
+        "click",
+        async () => {
+
+          await update(
+            ref(
+              db,
+              `lobbies/${currentRoom}/votes/${id}`
+            ),
+            {
+              count: (data.votes?.[id]?.count || 0) + 1,
+              username: player.username
+            }
+          );
+
+          await update(
+            ref(
+              db,
+              `lobbies/${currentRoom}/players/${currentPlayerId}`
+            ),
+            {
+              voted: true
+            }
+          );
+
+          voteStatus.textContent =
+            "Vote submitted";
+
+          checkVotes();
+
+        }
+      );
+
+      voteList.appendChild(card);
+
+    }
+  );
+
+}
+
+
+// CHECK VOTES
+
+async function checkVotes() {
+
+  const snapshot =
+    await get(
+      ref(db, `lobbies/${currentRoom}`)
+    );
+
+  const data = snapshot.val();
+
+  const players = data.players || {};
+
+  const votes = data.votes || {};
+
+  const totalPlayers =
+    Object.keys(players).length;
+
+  const votedPlayers =
+    Object.values(players)
+      .filter(p => p.voted).length;
+
+  if (votedPlayers < totalPlayers) return;
+
+
+  let highest = 0;
+  let eliminated = null;
+
+  Object.entries(votes).forEach(
+    ([id, vote]) => {
+
+      if (vote.count > highest) {
+        highest = vote.count;
+        eliminated = id;
+      }
+
+    }
+  );
+
+  const eliminatedPlayer =
+    players[eliminated];
+
+  const imposter =
+    Object.values(players)
+      .find(p => p.role === "imposter");
+
+  const imposterWon =
+    eliminatedPlayer?.role !== "imposter";
+
+  await update(
+    ref(db, `lobbies/${currentRoom}`),
+    {
+      phase: "result",
+      winner: imposterWon
+        ? "Imposter"
+        : "Crewmates",
+      imposter: imposter.username
+    }
+  );
+
+}
+
+
+// RESULT
+
+function showResult(data) {
+
+  voteScreen.classList.add("hidden");
+
+  gameScreen.classList.add("hidden");
+
+  resultScreen.classList.remove("hidden");
+
+  resultTitle.textContent =
+    `${data.winner} Win`;
+
+  resultText.innerHTML = `
+
+  The imposter was:<br><br>
+
+  <strong>
+    ${data.imposter}
+  </strong>
+
+  `;
+
+}
+
+
+// COPY
 
 copyBtn.addEventListener(
   "click",
@@ -376,22 +769,24 @@ copyBtn.addEventListener(
 
     setTimeout(() => {
       copyBtn.textContent = "Copy";
-    }, 1400);
+    }, 1500);
 
   }
 );
+
+
+// LEAVE
 
 leaveBtn.addEventListener(
   "click",
   async () => {
 
-    const playerRef =
+    await remove(
       ref(
         db,
         `lobbies/${currentRoom}/players/${currentPlayerId}`
-      );
-
-    await remove(playerRef);
+      )
+    );
 
     location.reload();
 
