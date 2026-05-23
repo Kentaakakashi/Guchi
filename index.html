@@ -94,41 +94,59 @@
 
     <!-- LOBBY -->
     <section class="card hidden" id="lobbyScreen">
+<section class="card hidden" id="lobbyScreen">
 
-      <div class="lobby-top">
+  <!-- HEADER -->
+  <div class="lobby-top">
 
-        <div>
-          <p class="room-label">ROOM CODE</p>
+    <div>
+      <p class="room-label">ROOM CODE</p>
 
-          <h2 id="displayCode">
-            ABC123
-          </h2>
-        </div>
+      <h2 id="displayCode">
+        ABC123
+      </h2>
+    </div>
 
-        <button id="copyBtn">
-          Copy
-        </button>
+    <button id="copyBtn">
+      Copy
+    </button>
 
-      </div>
+  </div>
 
-      <div class="players-header">
+  <!-- STATUS -->
+  <div class="lobby-info">
 
-        <h3>Players</h3>
+    <span id="playerCount">
+      0/8 Players
+    </span>
 
-        <span id="playerCount">
-          0 Players
-        </span>
+    <span class="waiting">
+      Waiting for players...
+    </span>
 
-      </div>
+  </div>
 
-      <div id="playerList"></div>
+  <!-- PLAYERS -->
+  <div id="playerList"></div>
 
-      <div class="status">
-        <div class="pulse"></div>
-        <span>Realtime Sync Active</span>
-      </div>
+  <!-- ACTIONS -->
+  <div class="lobby-actions">
 
-    </section>
+    <button id="readyBtn" class="secondary-btn">
+      Ready
+    </button>
+
+    <button id="startBtn" class="primary-btn hidden">
+      Start Game
+    </button>
+
+  </div>
+
+  <button id="leaveBtn" class="leave-btn">
+    Leave Lobby
+  </button>
+
+</section>
 
   </main>
 
