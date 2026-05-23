@@ -532,32 +532,8 @@ function showGame(data) {
   }
 
 
-  // TIMER
-
-  let time = 60;
-
-  timerDisplay.textContent = time;
-
-  const timer = setInterval(() => {
-
-    time--;
-
-    timerDisplay.textContent = time;
-
-    if (time <= 0) {
-
-      clearInterval(timer);
-
-      update(
-        ref(db, `lobbies/${currentRoom}`),
-        {
-          phase: "voting"
-        }
-      );
-
-    }
-
-  }, 1000);
+  // NO TIMER
+  // Players manually go to voting whenever they want.
 
 }
 
