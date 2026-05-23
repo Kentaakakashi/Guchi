@@ -1,0 +1,138 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Realtime Lobby</title>
+
+  <!-- FONT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- BACKGROUND GLOW -->
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+
+  <main class="app">
+
+    <!-- HOME -->
+    <section class="card" id="homeScreen">
+
+      <div class="top">
+        <p class="badge">Realtime Multiplayer</p>
+
+        <h1>
+          Party Lobby
+        </h1>
+
+        <p class="subtitle">
+          Create a room and play with your friends instantly.
+        </p>
+      </div>
+
+      <!-- USERNAME -->
+      <div class="input-group">
+
+        <label>Username</label>
+
+        <input
+          type="text"
+          id="username"
+          maxlength="14"
+          placeholder="Enter username"
+        />
+
+      </div>
+
+      <!-- CREATE -->
+      <button class="primary-btn" id="createBtn">
+        Create Lobby
+      </button>
+
+      <!-- DIVIDER -->
+      <div class="divider">
+        <span>OR</span>
+      </div>
+
+      <!-- JOIN -->
+      <div class="input-group">
+
+        <label>Room Code</label>
+
+        <input
+          type="text"
+          id="roomCode"
+          maxlength="6"
+          placeholder="Enter code"
+        />
+
+      </div>
+
+      <button class="secondary-btn" id="joinBtn">
+        Join Lobby
+      </button>
+
+      <!-- ERROR -->
+      <p id="errorText"></p>
+
+    </section>
+
+    <!-- LOBBY -->
+    <section class="card hidden" id="lobbyScreen">
+
+      <div class="lobby-top">
+
+        <div>
+          <p class="room-label">ROOM CODE</p>
+
+          <h2 id="displayCode">
+            ABC123
+          </h2>
+        </div>
+
+        <button id="copyBtn">
+          Copy
+        </button>
+
+      </div>
+
+      <div class="players-header">
+
+        <h3>Players</h3>
+
+        <span id="playerCount">
+          0 Players
+        </span>
+
+      </div>
+
+      <div id="playerList"></div>
+
+      <div class="status">
+        <div class="pulse"></div>
+        <span>Realtime Sync Active</span>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script type="module" src="script.js"></script>
+
+</body>
+</html>
