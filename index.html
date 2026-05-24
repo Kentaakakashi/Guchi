@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pulse Imposter</title>
+  <meta name="description" content="A polished realtime imposter party game with fast lobby creation, live player sync, and a cinematic UI." />
+  <meta name="theme-color" content="#0b1020" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="scene" aria-hidden="true">
+    <div class="scene-grid"></div>
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+    <div id="particleField" class="particles"></div>
+  </div>
+
+  <main class="app-shell">
+    <section class="screen home-screen" id="homeScreen">
+      <div class="hero-layout">
+        <div class="hero-copy">
+          <div class="brand-pill">
+            <span class="brand-dot"></span>
+            Pulse Imposter
+          </div>
+
+          <p class="eyebrow">Realtime party game</p>
+          <h1>Bluff hard. Read the room. Win ugly.</h1>
+          <p class="hero-text">
+            A cleaner, darker, more cinematic lobby flow for chaotic party sessions.
+            Built to feel fast, tense, and way more premium.
+          </p>
+
+          <div class="stat-row">
+            <div class="stat-card">
+              <strong>8</strong>
+              <span>Players max</span>
+            </div>
+            <div class="stat-card">
+              <strong>Live</strong>
+              <span>Realtime sync</span>
+            </div>
+            <div class="stat-card">
+              <strong>Fast</strong>
+              <span>Instant join</span>
+            </div>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature-card">
+              <span class="feature-icon">◐</span>
+              <h3>Stronger hierarchy</h3>
+              <p>Room code, player state, and actions now pop immediately.</p>
+            </article>
+            <article class="feature-card">
+              <span class="feature-icon">↯</span>
+              <h3>Slick motion</h3>
+              <p>Glass, glow, lift, and stagger animations with reduced-motion support.</p>
+            </article>
+            <article class="feature-card">
+              <span class="feature-icon">◎</span>
+              <h3>Cleaner flow</h3>
+              <p>Better states for lobby, role reveal, voting, and results.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="auth-panel glass-card">
+          <div class="panel-top">
+            <div>
+              <p class="eyebrow">Start a session</p>
+              <h2>Enter the room.</h2>
+            </div>
+            <div class="mini-chip">v2 redesign</div>
+          </div>
+
+          <label for="username">Username</label>
+          <input
+            id="username"
+            maxlength="14"
+            type="text"
+            placeholder="Your name"
+            autocomplete="nickname"
+          />
+
+          <button id="createBtn" class="btn btn-primary">
+            Create Lobby
+          </button>
+
+          <div class="split-row">
+            <span></span>
+            <span>or join</span>
+            <span></span>
+          </div>
+
+          <label for="roomCode">Room Code</label>
+          <input
+            id="roomCode"
+            maxlength="6"
+            type="text"
+            placeholder="ABC123"
+            autocomplete="one-time-code"
+          />
+
+          <button id="joinBtn" class="btn btn-secondary">
+            Join Lobby
+          </button>
+
+          <p id="errorText" class="error-text" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen hidden" id="lobbyScreen">
+      <header class="screen-header glass-card">
+        <div>
+          <p class="eyebrow">Live lobby</p>
+          <h2>Room <span id="displayCode">ABC123</span></h2>
+        </div>
+
+        <div class="header-actions">
+          <button id="copyBtn" class="btn btn-compact btn-secondary">
+            Copy code
+          </button>
+        </div>
+      </header>
+
+      <div class="info-strip">
+        <div class="info-chip">
+          <span class="dot dot-green"></span>
+          <span>Realtime synced</span>
+        </div>
+        <div class="info-chip" id="playerCount">
+          0/8 Players
+        </div>
+        <div class="info-chip">
+          <span>Ready up, then let the host launch.</span>
+        </div>
+      </div>
+
+      <div class="lobby-layout">
+        <section class="glass-card lobby-panel">
+          <div class="panel-top">
+            <div>
+              <p class="eyebrow">Players</p>
+              <h3>Squad list</h3>
+            </div>
+            <div class="mini-chip">max 8</div>
+          </div>
+
+          <div id="playerList" class="card-stack"></div>
+        </section>
+
+        <aside class="glass-card control-panel">
+          <div>
+            <p class="eyebrow">Room controls</p>
+            <h3>Keep the game moving.</h3>
+            <p class="muted-copy">
+              Toggle ready, then the host can start the round when everyone’s in.
+            </p>
+          </div>
+
+          <div class="control-stack">
+            <button id="readyBtn" class="btn btn-secondary">
+              Ready
+            </button>
+
+            <button id="startBtn" class="btn btn-primary hidden">
+              Start Match
+            </button>
+
+            <button id="leaveBtn" class="btn btn-danger">
+              Leave Lobby
+            </button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="screen hidden" id="gameScreen">
+      <div class="center-stage glass-card">
+        <p class="eyebrow">Your role</p>
+        <div id="roleCard" class="role-card">
+          <div class="role-ring"></div>
+          <h1 id="roleText">CREWMATE</h1>
+          <p id="wordText">WORD</p>
+        </div>
+
+        <div class="role-notes">
+          <div class="note-card">
+            <strong>Keep it calm</strong>
+            <span>Talk naturally and do not overplay it.</span>
+          </div>
+          <div class="note-card">
+            <strong>Watch the room</strong>
+            <span>One sloppy answer can hand the win away.</span>
+          </div>
+        </div>
+
+        <button id="voteBtn" class="btn btn-primary">
+          Move to Voting
+        </button>
+      </div>
+    </section>
+
+    <section class="screen hidden" id="voteScreen">
+      <div class="screen-header glass-card">
+        <div>
+          <p class="eyebrow">Voting phase</p>
+          <h2>Pick who feels off.</h2>
+        </div>
+        <div class="mini-chip">one vote each</div>
+      </div>
+
+      <div class="glass-card vote-panel">
+        <div id="voteList" class="vote-grid"></div>
+        <div id="voteStatus" class="status-line">
+          Waiting for votes...
+        </div>
+      </div>
+    </section>
+
+    <section class="screen hidden" id="resultScreen">
+      <div class="result-card glass-card">
+        <div class="result-mark">✦</div>
+        <p class="eyebrow">Match result</p>
+        <h1 id="resultTitle">RESULT</h1>
+        <p id="resultText">Result text</p>
+
+        <div class="result-actions">
+          <button id="restartBtn" class="btn btn-primary">
+            Back to Home
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
